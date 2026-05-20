@@ -1,0 +1,109 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "note-filter",
+  "permissions": {
+    "http": {
+      "enable": false
+    },
+    "media": false,
+    "realtime": false,
+    "redis": true,
+    "reddit": {
+      "enable": true
+    }
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "settings": {
+    "subreddit": {
+      "selectedBehavior": {
+        "type": "select",
+        "label": "Select behavior",
+        "helpText": "\"Report\" will flag content for review without removing it. \"Filter\" will remove content and send it for review. \"Remove\" will remove content without sending it for review.",
+        "defaultValue": "report",
+        "options": [
+          {
+            "label": "Report",
+            "value": "report"
+          },
+          {
+            "label": "Filter",
+            "value": "filter"
+          },
+          {
+            "label": "Remove",
+            "value": "remove"
+          }
+        ]
+      },
+      "actionPosts": {
+        "type": "boolean",
+        "label": "Action posts",
+        "helpText": "If enabled, the app will action posts from users with a note on their account.",
+        "defaultValue": false
+      },
+      "actionComments": {
+        "type": "boolean",
+        "label": "Action comments",
+        "helpText": "If enabled, the app will action comments from users with a note on their account.",
+        "defaultValue": false
+      },
+      "actionSpamWatch": {
+        "type": "boolean",
+        "label": "Action users with a \"Spam Watch\" note",
+        "helpText": "If enabled, the app will action content from users that have a \"Spam Watch\" note on their account.",
+        "defaultValue": true
+      },
+      "actionSpamWarning": {
+        "type": "boolean",
+        "label": "Action users with a \"Spam Warning\" note",
+        "helpText": "If enabled, the app will action content from users that have a \"Spam Warning\" note on their account.",
+        "defaultValue": true
+      },
+      "actionAbuseWarning": {
+        "type": "boolean",
+        "label": "Action users with an \"Abuse Warning\" note",
+        "helpText": "If enabled, the app will action content from users that have an \"Abuse Warning\" note on their account.",
+        "defaultValue": true
+      },
+      "actionBanNote": {
+        "type": "boolean",
+        "label": "Action users with a \"Ban\" note",
+        "helpText": "If enabled, the app will action content from users that have a \"Ban\" note on their account (typically from a previous ban).",
+        "defaultValue": true
+      },
+      "actionNoLabel": {
+        "type": "boolean",
+        "label": "Action users with a standard note",
+        "helpText": "If enabled, the app will action content from users that have a note on their account without a specific label.",
+        "defaultValue": false
+      }
+    }
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Note Filter",
+        "description": "Settings",
+        "forUserType": "moderator",
+        "location": [
+          "subreddit"
+        ],
+        "endpoint": "/internal/menu/app-settings",
+        "postFilter": "none"
+      }
+    ]
+  },
+  "triggers": {
+    "onPostCreate": "/internal/triggers/on-post-create",
+    "onCommentCreate": "/internal/triggers/on-comment-create"
+  },
+  "marketingAssets": {
+    "icon": "assets/nf-icon.png"
+  },
+  "dev": {
+    "subreddit": "CapitalOneBank"
+  }
+}
