@@ -53,31 +53,37 @@
       "actionSpamWatch": {
         "type": "boolean",
         "label": "Action users with a \"Spam Watch\" note",
-        "helpText": "If enabled, the app will action content from users that have a \"Spam Watch\" note on their account.",
+        "helpText": "If enabled, the app will action content from users with a \"Spam Watch\" note on their account.",
         "defaultValue": true
       },
       "actionSpamWarning": {
         "type": "boolean",
         "label": "Action users with a \"Spam Warning\" note",
-        "helpText": "If enabled, the app will action content from users that have a \"Spam Warning\" note on their account.",
+        "helpText": "If enabled, the app will action content from users with a a \"Spam Warning\" note on their account.",
         "defaultValue": true
       },
       "actionAbuseWarning": {
         "type": "boolean",
         "label": "Action users with an \"Abuse Warning\" note",
-        "helpText": "If enabled, the app will action content from users that have an \"Abuse Warning\" note on their account.",
+        "helpText": "If enabled, the app will action content from users with an \"Abuse Warning\" note on their account.",
         "defaultValue": true
       },
       "actionBanNote": {
         "type": "boolean",
         "label": "Action users with a \"Ban\" note",
-        "helpText": "If enabled, the app will action content from users that have a \"Ban\" note on their account (typically from a previous ban).",
+        "helpText": "If enabled, the app will action content from users with a \"Ban\" note on their account (typically from a previous ban).",
         "defaultValue": true
       },
       "actionNoLabel": {
         "type": "boolean",
         "label": "Action users with a standard note",
-        "helpText": "If enabled, the app will action content from users that have a note on their account without a specific label.",
+        "helpText": "If enabled, the app will action content from users who have a note on their account without a specific label.",
+        "defaultValue": false
+      },
+      "exemptApproved": {
+        "type": "boolean",
+        "label": "Exempt approved users",
+        "helpText": "If enabled, the app will not action content from users who have been approved by mods.",
         "defaultValue": false
       }
     }

@@ -1,15 +1,18 @@
 ## Features
 
-This tool allows mods to configure automatic actions to be made on posts and comments by users who have mod notes on their account. It's configurable by the label on the note rather than its text. For example, you can choose to only filter content by users with a "Spam Warning" or "Abuse Warning" note. Full feature list is below.
+This tool allows mods to configure automatic actions to be made on posts and comments by users who have mod notes on their account. It's configurable by the label on the note rather than its text. For example, you can choose to only filter content by users with a "Spam Warning" or "Abuse Warning" note. The full feature list is below.
 
 * Automatically report, filter, or remove content from users who have mod notes on their account.
 * Action posts, comments, or both.
+* Optionally exempt approved users.
 * Choose the specific label types to action. These include:
     * Spam Watch
     * Spam Warning
     * Abuse Warning
     * Ban
-    * No Label 
+    * No Label
+
+*Note: Moderators' posts and comments will not be affected by this app, even if they have mod notes.*
 
 ---
 

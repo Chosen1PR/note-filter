@@ -3,14 +3,14 @@ import {
   createServer,
   context,
   getServerPort,
-  settings,
-  //reddit
+  settings
 } from "@devvit/web/server";
 
 import {
   getModNotes,
   iterateModNotes,
-  isUserAMod
+  isUserAMod,
+  isUserApproved
 } from "./utils.js";
 import { PostId, CommentId } from "./types";
 
@@ -39,8 +39,15 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     const actionPosts = allSettings['actionPosts'] as boolean ?? false;
     if (!actionPosts) return;
     const username = req.body.author.name as string ?? "";
+    // Exclude mods from actions.
     const isMod = await isUserAMod(username);
-    if (isMod) return; // Exclude mods from actions
+    if (isMod) return;
+    // Exclude approved users from actions if the corresponding setting is enabled.
+    if (allSettings['exemptApproved']) {
+      const isApproved = await isUserApproved(username);
+      if (!isApproved) return;
+    }
+    // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
     if (modNotes.length > 0) {
       const postId = req.body.post.id as string ?? "";
@@ -60,8 +67,15 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     const actionComments = allSettings['actionComments'] as boolean ?? false;
     if (!actionComments) return;
     const username = req.body.author.name as string ?? "";
+    // Exclude mods from actions.
     const isMod = await isUserAMod(username);
-    if (isMod) return; // Exclude mods from actions
+    if (isMod) return;
+    // Exclude approved users from actions if the corresponding setting is enabled.
+    if (allSettings['exemptApproved']) {
+      const isApproved = await isUserApproved(username);
+      if (!isApproved) return;
+    }
+    // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
     if (modNotes.length > 0) {
       const commentId = req.body.comment.id as string ?? "";

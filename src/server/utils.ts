@@ -116,3 +116,13 @@ export async function isUserAMod(username: string) {
   }
   catch (error) { return false; }
 }
+
+// Helper function to determine if a user is approved. Used for excluding approved users from actions depending on the setting.
+export async function isUserApproved(username: string) {
+  try {
+    const approvedUser = await reddit.getApprovedUsers( { subredditName: context.subredditName, username: username, limit: 1 }).all();
+    if (!approvedUser) return false;
+    else return (approvedUser.length > 0);
+  }
+  catch (error) {return false; }
+}
