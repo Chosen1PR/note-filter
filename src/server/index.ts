@@ -7,7 +7,11 @@ import {
   //reddit
 } from "@devvit/web/server";
 
-import { getModNotes, iterateModNotes } from "./utils.js";
+import {
+  getModNotes,
+  iterateModNotes,
+  isUserAMod
+} from "./utils.js";
 import { PostId, CommentId } from "./types";
 
 const app = express();
@@ -32,32 +36,42 @@ router.post("/internal/menu/app-settings", async (_req, res): Promise<void> => {
 router.post('/internal/triggers/on-post-create', async (req, res): Promise<void> => {
   try {
     const allSettings = await settings.getAll();
-    if (!allSettings['actionPosts']) return;
+    const actionPosts = allSettings['actionPosts'] as boolean ?? false;
+    if (!actionPosts) return;
     const username = req.body.author.name as string ?? "";
-    const postId = req.body.post.id as string ?? "";
+    const isMod = await isUserAMod(username);
+    if (isMod) return; // Exclude mods from actions
     const modNotes = await getModNotes(username);
     if (modNotes.length > 0) {
+      const postId = req.body.post.id as string ?? "";
       await iterateModNotes(modNotes, allSettings, postId as PostId);
     }
     res.status(200).json({ status: 'ok' });
   }
-  catch {} // General catch to make sure app doesn't throw an exception.
+  catch (error) {
+    console.log(error);
+  }
 });
 
 // Trigger handler for comment creation
 router.post('/internal/triggers/on-comment-create', async (req, res): Promise<void> => {
   try {
     const allSettings = await settings.getAll();
-    if (!allSettings['actionPosts']) return;
+    const actionComments = allSettings['actionComments'] as boolean ?? false;
+    if (!actionComments) return;
     const username = req.body.author.name as string ?? "";
-    const commentId = req.body.comment.id as string ?? "";
+    const isMod = await isUserAMod(username);
+    if (isMod) return; // Exclude mods from actions
     const modNotes = await getModNotes(username);
     if (modNotes.length > 0) {
+      const commentId = req.body.comment.id as string ?? "";
       await iterateModNotes(modNotes, allSettings, commentId as CommentId);
     }
     res.status(200).json({ status: 'ok' });
   }
-  catch {} // General catch to make sure app doesn't throw an exception.
+  catch (error) {
+    console.log(error);
+  }
 });
 
 app.use(router);

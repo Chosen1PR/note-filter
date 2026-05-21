@@ -4,7 +4,11 @@ import {
   ModNote,
   SettingsValues
 } from "@devvit/web/server";
-import { PostOrCommentId } from "./types";
+import {
+  PostId,
+  CommentId,
+  PostOrCommentId
+} from "./types";
 
 // Helper function to get all mod notes for a given user
 // For reference, mod note types are below
@@ -20,20 +24,24 @@ export async function getModNotes(username: string) {
     else return [];
   }
   catch (error) {
+    console.log(error);
     return [];
   }
 }
 
+// Helper function to iterate through mod notes and take aciton based on settings
 export async function iterateModNotes(modNotes: ModNote[], allSettings: SettingsValues, id: PostOrCommentId) {
-  const behavior = allSettings['selectedBehavior'] as string ?? "report";
+  const behavior = allSettings['behavior'] as string ?? "report";
   const actionBanNote = allSettings['actionBanNote'] as boolean ?? false;
   const actionAbuseWarning = allSettings['actionAbuseWarning'] as boolean ?? false;
   const actionSpamWarning = allSettings['actionSpamWarning'] as boolean ?? false;
   const actionSpamWatch = allSettings['actionSpamWatch'] as boolean ?? false;
   const actionNoLabel = allSettings['actionNoLabel'] as boolean ?? false;
   for (const note of modNotes) {
-    const label = note.userNote?.label ?? "NONE";
-    if (actionBanNote && label.includes("BAN")) {
+    const userNote = note.userNote;
+    if (!userNote) continue;
+    const label = userNote.label as string ?? "NONE";
+    if (actionBanNote && label.toString().includes("BAN")) {
       await actionContent(id as PostOrCommentId, label, behavior);
       break;
     }
@@ -56,16 +64,55 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
   }
 }
 
+// Helper function to take action on content based on mod note label and selected behavior.
+// Split up into two functions because of content type requirements for Reddit API.
 export async function actionContent(id: PostOrCommentId, label: string, behavior: string) {
-  switch (behavior) {
-    case "report":
-      await reddit.filter(id, `User has mod note with label: ${label}`, true);
-      break;
-    case "filter":
-      await reddit.filter(id, `User has mod note with label: ${label}`, false);
-      break;
-    case "remove":
-      await reddit.remove(id, false);
-      break;
+  if (id.startsWith("t3_")) {
+    await actionPost(id as PostId, label, behavior);
   }
+  else if (id.startsWith("t1_")) {
+    await actionComment(id as CommentId, label, behavior);
+  }
+}
+
+// Helper function to action a post based on mod note label and selected behavior
+export async function actionPost(id: PostId, label: string, behavior: string) {
+  const reason = `User has a mod note with label: ${label}`;
+  if (behavior == "report") {
+    const post = await reddit.getPostById(id);
+    if (post) await reddit.report(post, { reason: reason });
+  }
+  else if (behavior == "filter") {
+    await reddit.filter(id, reason, true);
+  }
+  else if (behavior == "remove") {
+    await reddit.remove(id, false);
+  }
+}
+
+// Helper function to action a comment based on mod note label and selected behavior
+export async function actionComment(id: CommentId, label: string, behavior: string) {
+  const reason = `User has a mod note with label: ${label}`;
+  if (behavior == "report") {
+    const comment = await reddit.getCommentById(id);
+    if (comment) await reddit.report(comment, { reason: reason });
+  }
+  else if (behavior == "filter") {
+    await reddit.filter(id, reason, true);
+  }
+  else if (behavior == "remove") {
+    await reddit.remove(id, false);
+  }
+}
+
+// Helper function to determine if a user is a mod. Used for excluding mods from actions.
+export async function isUserAMod(username: string) {
+  try {
+    const user = await reddit.getUserByUsername(username);
+    if (!user) return false;
+    const perms = await user.getModPermissionsForSubreddit(context.subredditName);
+    if (!perms) return false;
+    else return (perms.length > 0);
+  }
+  catch (error) { return false; }
 }

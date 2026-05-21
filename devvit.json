@@ -18,7 +18,7 @@
   },
   "settings": {
     "subreddit": {
-      "selectedBehavior": {
+      "behavior": {
         "type": "select",
         "label": "Select behavior",
         "helpText": "\"Report\" will flag content for review without removing it. \"Filter\" will remove content and send it for review. \"Remove\" will remove content without sending it for review.",
@@ -85,7 +85,7 @@
   "menu": {
     "items": [
       {
-        "label": "Note Filter",
+        "label": "Mod Note Filter",
         "description": "Settings",
         "forUserType": "moderator",
         "location": [
