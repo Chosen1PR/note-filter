@@ -38,6 +38,8 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     const allSettings = await settings.getAll();
     const actionPosts = allSettings['actionPosts'] as boolean ?? false;
     if (!actionPosts) return;
+    const behavior = allSettings['behavior'] as string ?? "";
+    if (behavior == "") return;
     const username = req.body.author.name as string ?? "";
     // Exclude mods from actions.
     const isMod = await isUserAMod(username);
@@ -66,6 +68,8 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     const allSettings = await settings.getAll();
     const actionComments = allSettings['actionComments'] as boolean ?? false;
     if (!actionComments) return;
+    const behavior = allSettings['behavior'] as string ?? "";
+    if (behavior == "") return;
     const username = req.body.author.name as string ?? "";
     // Exclude mods from actions.
     const isMod = await isUserAMod(username);
