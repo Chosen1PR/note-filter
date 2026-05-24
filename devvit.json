@@ -42,13 +42,13 @@
         "type": "boolean",
         "label": "Action posts",
         "helpText": "If enabled, the app will action posts from users with a note on their account.",
-        "defaultValue": false
+        "defaultValue": true
       },
       "actionComments": {
         "type": "boolean",
         "label": "Action comments",
         "helpText": "If enabled, the app will action comments from users with a note on their account.",
-        "defaultValue": false
+        "defaultValue": true
       },
       "actionSpamWatch": {
         "type": "boolean",
