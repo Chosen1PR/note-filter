@@ -21,9 +21,9 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ### [0.1.3] (2026-06-11)
 
+- Added an option to ignore mod notes past a certain age (in days).
 - Fixed an issue that caused the app to target approved users instead of exempting them.
 - Removed the Settings menu item at subreddit level for a cleaner menu. Settings are still accessible from developers.reddit.com.
-- Added an option to ignore mod notes past a certain age (in days).
 
 ### [0.1.2] Initial version (2026-05-21)
 
