@@ -19,10 +19,11 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
-### [0.1.4] (2026-06-11)
+### [0.1.5] (2026-06-11)
 
 - Added an option to ignore mod notes past a certain age (in days).
 - Fixed an issue that caused the app to target approved users instead of exempting them.
+- Changed the default behavior of the app from Report to Filter.
 - Removed the Settings menu item at subreddit level for a cleaner menu. Settings are still accessible from developers.reddit.com.
 
 ### [0.1.2] Initial version (2026-05-21)
