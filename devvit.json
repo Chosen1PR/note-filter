@@ -80,6 +80,12 @@
         "helpText": "If enabled, the app will action content from users who have a note on their account without a specific label.",
         "defaultValue": false
       },
+      "maxNoteAgeDays": {
+        "type": "number",
+        "label": "Ignore notes older than ___ days",
+        "helpText": "Ignore mod notes older than a certain amount of days. Set to 0 or less to respect all notes.",
+        "defaultValue": 0
+      },
       "exemptApproved": {
         "type": "boolean",
         "label": "Exempt approved users",
@@ -87,20 +93,6 @@
         "defaultValue": false
       }
     }
-  },
-  "menu": {
-    "items": [
-      {
-        "label": "Mod Note Filter",
-        "description": "Settings",
-        "forUserType": "moderator",
-        "location": [
-          "subreddit"
-        ],
-        "endpoint": "/internal/menu/app-settings",
-        "postFilter": "none"
-      }
-    ]
   },
   "triggers": {
     "onPostCreate": "/internal/triggers/on-post-create",

@@ -1,7 +1,6 @@
 import express from "express";
 import {
   createServer,
-  context,
   getServerPort,
   settings
 } from "@devvit/web/server";
@@ -25,13 +24,6 @@ app.use(express.text());
 
 const router = express.Router();
 
-// Menu item for app settings
-router.post("/internal/menu/app-settings", async (_req, res): Promise<void> => {
-  res.json({
-    navigateTo: `https://developers.reddit.com/r/${context.subredditName}/apps/${context.appSlug}`,
-  });
-});
-
 // Trigger handler for post creation
 router.post('/internal/triggers/on-post-create', async (req, res): Promise<void> => {
   try {
@@ -47,7 +39,7 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     // Exclude approved users from actions if the corresponding setting is enabled.
     if (allSettings['exemptApproved']) {
       const isApproved = await isUserApproved(username);
-      if (!isApproved) return;
+      if (isApproved) return;
     }
     // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
@@ -77,7 +69,7 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     // Exclude approved users from actions if the corresponding setting is enabled.
     if (allSettings['exemptApproved']) {
       const isApproved = await isUserApproved(username);
-      if (!isApproved) return;
+      if (isApproved) return;
     }
     // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);

@@ -37,27 +37,32 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
   const actionSpamWarning = allSettings['actionSpamWarning'] as boolean ?? false;
   const actionSpamWatch = allSettings['actionSpamWatch'] as boolean ?? false;
   const actionNoLabel = allSettings['actionNoLabel'] as boolean ?? false;
+  const maxNoteAgeDays = allSettings['maxNoteAgeDays'] as number ?? 0;
   for (const note of modNotes) {
     const userNote = note.userNote;
     if (!userNote) continue;
+    if (maxNoteAgeDays > 0) {
+      const noteAgeDays = getAgeDays(note.createdAt);
+      if (noteAgeDays > maxNoteAgeDays) continue;
+    }
     const label = userNote.label as string ?? "NONE";
     if (actionBanNote && label.toString().includes("BAN")) {
       await actionContent(id as PostOrCommentId, label, behavior);
       break;
     }
-    if (actionAbuseWarning && label == "ABUSE_WARNING") {
+    else if (actionAbuseWarning && label == "ABUSE_WARNING") {
       await actionContent(id as PostOrCommentId, label, behavior);
       break;
     }
-    if (actionSpamWarning && label == "SPAM_WARNING") {
+    else if (actionSpamWarning && label == "SPAM_WARNING") {
       await actionContent(id as PostOrCommentId, label, behavior);
       break;
     }
-    if (actionSpamWatch && label == "SPAM_WATCH") {
+    else if (actionSpamWatch && label == "SPAM_WATCH") {
       await actionContent(id as PostOrCommentId, label, behavior);
       break;
     }
-    if (actionNoLabel && label == "NONE") {
+    else if (actionNoLabel && label == "NONE") {
       await actionContent(id as PostOrCommentId, label, behavior);
       break;
     }
@@ -124,5 +129,13 @@ export async function isUserApproved(username: string) {
     if (!approvedUser) return false;
     else return (approvedUser.length > 0);
   }
-  catch (error) {return false; }
+  catch (error) {return false;}
+}
+
+// Helper function to determine the age (in days) of a mod note.
+// Used for ignoring mod notest past a certain age.
+function getAgeDays(date: Date) {
+  const diffMs = Date.now() - date.getTime();
+  // 1000ms/s, 60s/min, 60min/hr, 24hr/day
+  return diffMs / (1000 * 60 * 60 * 24);
 }

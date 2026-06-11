@@ -4,6 +4,7 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 * Automatically report, filter, or remove content from users who have mod notes on their account.
 * Action posts, comments, or both.
+* Optionally ignore mod notes past a certain age (in days).
 * Optionally exempt approved users.
 * Choose the specific label types to action. These include:
     * Spam Watch
@@ -17,6 +18,12 @@ This tool allows mods to configure automatic actions to be made on posts and com
 ---
 
 ## Changelog
+
+### [0.1.3] (2026-06-11)
+
+- Fixed an issue that caused the app to target approved users instead of exempting them.
+- Removed the Settings menu item at subreddit level for a cleaner menu. Settings are still accessible from developers.reddit.com.
+- Added an option to ignore mod notes past a certain age (in days).
 
 ### [0.1.2] Initial version (2026-05-21)
 
