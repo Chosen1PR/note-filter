@@ -4,7 +4,7 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 * Automatically report, filter, or remove content from users who have mod notes on their account.
 * Action posts, comments, or both.
-* Optionally ignore mod notes past a certain age (in days).
+* Ignore mod notes past a certain age (in days).
 * Optionally exempt approved users.
 * Choose the specific label types to action. These include:
     * Spam Watch
