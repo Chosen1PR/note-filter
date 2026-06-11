@@ -8,7 +8,7 @@ import {
 import {
   getModNotes,
   iterateModNotes,
-  isUserAMod,
+  isUserMod,
   isUserApproved
 } from "./utils.js";
 import { PostId, CommentId } from "./types";
@@ -34,7 +34,7 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     if (behavior == "") return;
     const username = req.body.author.name as string ?? "";
     // Exclude mods from actions.
-    const isMod = await isUserAMod(username);
+    const isMod = await isUserMod(username);
     if (isMod) return;
     // Exclude approved users from actions if the corresponding setting is enabled.
     if (allSettings['exemptApproved']) {
@@ -64,7 +64,7 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     if (behavior == "") return;
     const username = req.body.author.name as string ?? "";
     // Exclude mods from actions.
-    const isMod = await isUserAMod(username);
+    const isMod = await isUserMod(username);
     if (isMod) return;
     // Exclude approved users from actions if the corresponding setting is enabled.
     if (allSettings['exemptApproved']) {

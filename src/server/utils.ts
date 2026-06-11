@@ -111,7 +111,7 @@ export async function actionComment(id: CommentId, label: string, behavior: stri
 }
 
 // Helper function to determine if a user is a mod. Used for excluding mods from actions.
-export async function isUserAMod(username: string) {
+export async function isUserMod(username: string) {
   try {
     const user = await reddit.getUserByUsername(username);
     if (!user) return false;
