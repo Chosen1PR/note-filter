@@ -2,8 +2,11 @@ import {
   reddit,
   context,
   ModNote,
-  SettingsValues
+  SettingsValues,
+  Post,
+  Comment
 } from "@devvit/web/server";
+
 import {
   PostId,
   CommentId,
@@ -31,13 +34,13 @@ export async function getModNotes(username: string) {
 
 // Helper function to iterate through mod notes and take aciton based on settings
 export async function iterateModNotes(modNotes: ModNote[], allSettings: SettingsValues, id: PostOrCommentId) {
-  const behavior = allSettings['behavior'] as string ?? "report";
-  const actionBanNote = allSettings['actionBanNote'] as boolean ?? false;
-  const actionAbuseWarning = allSettings['actionAbuseWarning'] as boolean ?? false;
-  const actionSpamWarning = allSettings['actionSpamWarning'] as boolean ?? false;
-  const actionSpamWatch = allSettings['actionSpamWatch'] as boolean ?? false;
-  const actionNoLabel = allSettings['actionNoLabel'] as boolean ?? false;
-  const maxNoteAgeDays = allSettings['maxNoteAgeDays'] as number ?? 0;
+  const banNoteBehavior = allSettings['banNoteBehavior'] as string ?? 'none',
+  abuseWarningBehavior = allSettings['abuseWarningBehavior'] as string ?? 'none',
+  spamWarningBehavior = allSettings['spamWarningBehavior'] as string ?? 'none',
+  spamWatchBehavior = allSettings['spamWatchBehavior'] as string ?? 'none',
+  noLabelBehavior = allSettings['noLabelBehavior'] as string ?? 'none',
+  maxNoteAgeDays = allSettings['maxNoteAgeDays'] as number ?? 0;
+  var actionTaken = '';
   for (const note of modNotes) {
     const userNote = note.userNote;
     if (!userNote) continue;
@@ -45,62 +48,43 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
       const noteAgeDays = getAgeDays(note.createdAt);
       if (noteAgeDays > maxNoteAgeDays) continue;
     }
-    const label = userNote.label as string ?? "NONE";
-    if (actionBanNote && label.toString().includes("BAN")) {
-      await actionContent(id as PostOrCommentId, label, behavior);
-      break;
+    const label = userNote.label as string ?? 'NONE';
+    if (banNoteBehavior != 'none' && label.toString().includes("BAN")) {
+      await actionContent(id, label, banNoteBehavior);
+      actionTaken = banNoteBehavior;
     }
-    else if (actionAbuseWarning && label == "ABUSE_WARNING") {
-      await actionContent(id as PostOrCommentId, label, behavior);
-      break;
+    else if (abuseWarningBehavior != 'none' && label == 'ABUSE_WARNING') {
+      await actionContent(id, label, abuseWarningBehavior);
+      actionTaken = abuseWarningBehavior;
     }
-    else if (actionSpamWarning && label == "SPAM_WARNING") {
-      await actionContent(id as PostOrCommentId, label, behavior);
-      break;
+    else if (spamWarningBehavior != 'none' && label == 'SPAM_WARNING') {
+      await actionContent(id, label, spamWarningBehavior);
+      actionTaken = spamWarningBehavior;
     }
-    else if (actionSpamWatch && label == "SPAM_WATCH") {
-      await actionContent(id as PostOrCommentId, label, behavior);
-      break;
+    else if (spamWatchBehavior != 'none' && label == 'SPAM_WATCH') {
+      await actionContent(id, label, spamWatchBehavior);
+      actionTaken = spamWatchBehavior;
     }
-    else if (actionNoLabel && label == "NONE") {
-      await actionContent(id as PostOrCommentId, label, behavior);
-      break;
+    else if (noLabelBehavior != 'none' && label == 'NONE') {
+      await actionContent(id, label, noLabelBehavior);
+      actionTaken = noLabelBehavior;
     }
+    if (actionTaken == 'remove') break;
   }
 }
 
 // Helper function to take action on content based on mod note label and selected behavior.
 // Split up into two functions because of content type requirements for Reddit API.
 export async function actionContent(id: PostOrCommentId, label: string, behavior: string) {
-  if (id.startsWith("t3_")) {
-    await actionPost(id as PostId, label, behavior);
-  }
-  else if (id.startsWith("t1_")) {
-    await actionComment(id as CommentId, label, behavior);
-  }
-}
-
-// Helper function to action a post based on mod note label and selected behavior
-export async function actionPost(id: PostId, label: string, behavior: string) {
-  const reason = `User has a mod note with label: ${label}`;
-  if (behavior == "report") {
-    const post = await reddit.getPostById(id);
-    if (post) await reddit.report(post, { reason: reason });
-  }
-  else if (behavior == "filter") {
-    await reddit.filter(id, reason, true);
-  }
-  else if (behavior == "remove") {
-    await reddit.remove(id, false);
-  }
-}
-
-// Helper function to action a comment based on mod note label and selected behavior
-export async function actionComment(id: CommentId, label: string, behavior: string) {
-  const reason = `User has a mod note with label: ${label}`;
-  if (behavior == "report") {
-    const comment = await reddit.getCommentById(id);
-    if (comment) await reddit.report(comment, { reason: reason });
+  const formattedLabel = formatLabel(label),
+  reason = `User has a mod note with label: ${formattedLabel}`;
+  if (behavior == 'report') {
+    let postOrComment: Post | Comment | undefined;
+    if (id.startsWith('t3_'))
+      postOrComment = await reddit.getPostById(id as PostId);
+    else if (id.startsWith('t1_'))
+      postOrComment = await reddit.getCommentById(id as CommentId);
+    if (postOrComment) await reddit.report(postOrComment, { reason: reason })
   }
   else if (behavior == "filter") {
     await reddit.filter(id, reason, true);
@@ -138,4 +122,33 @@ function getAgeDays(date: Date) {
   const diffMs = Date.now() - date.getTime();
   // 1000ms/s, 60s/min, 60min/hr, 24hr/day
   return diffMs / (1000 * 60 * 60 * 24);
+}
+
+// Helper function for cleaning up the formatting on the labels for better readability.
+function formatLabel(label: string) {
+  switch (label) {
+    case 'SPAM_WATCH': return 'Spam Watch';
+    case 'SPAM_WARNING': return 'Spam Warning';
+    case 'ABUSE_WARNING': return 'Abuse Warning';
+    case 'BAN': return 'Ban';
+    case 'PERMA_BAN': return 'Permanent Ban';
+    case 'BOT_BAN': return 'Bot Ban';
+    default: return 'N/A';
+  }
+}
+
+// Helper function to determine if the app needs to continue at all.
+// Returns true if it should try to make at least one action, false otherwise.
+export function isThereAtLeastOneValidBehavior(allSettings: SettingsValues) {
+  const spamWatchBehavior = allSettings['spamWatchBehavior'] as string ?? 'none',
+  spamWarningBehavior = allSettings['spamWarningBehavior'] as string ?? 'none',
+  abuseWarningBehavior = allSettings['abuseWarningBehavior'] as string ?? 'none',
+  banNoteBehavior = allSettings['banNoteBehavior'] as string ?? 'none',
+  noLabelBehavior = allSettings['noLabelBehavior'] as string ?? 'none';
+  if (spamWatchBehavior != 'none') return true;
+  else if (spamWarningBehavior != 'none') return true;
+  else if (abuseWarningBehavior != 'none') return true;
+  else if (banNoteBehavior != 'none') return true;
+  else if (noLabelBehavior != 'none') return true;
+  else return false;
 }

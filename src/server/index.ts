@@ -9,7 +9,8 @@ import {
   getModNotes,
   iterateModNotes,
   isUserMod,
-  isUserApproved
+  isUserApproved,
+  isThereAtLeastOneValidBehavior
 } from "./utils.js";
 import { PostId, CommentId } from "./types";
 
@@ -30,8 +31,7 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     const allSettings = await settings.getAll();
     const actionPosts = allSettings['actionPosts'] as boolean ?? false;
     if (!actionPosts) return;
-    const behavior = allSettings['behavior'] as string ?? "";
-    if (behavior == "") return;
+    if (!isThereAtLeastOneValidBehavior(allSettings)) return;
     const username = req.body.author.name as string ?? "";
     // Exclude mods from actions.
     const isMod = await isUserMod(username);
@@ -60,8 +60,7 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     const allSettings = await settings.getAll();
     const actionComments = allSettings['actionComments'] as boolean ?? false;
     if (!actionComments) return;
-    const behavior = allSettings['behavior'] as string ?? "";
-    if (behavior == "") return;
+    if (!isThereAtLeastOneValidBehavior(allSettings)) return;
     const username = req.body.author.name as string ?? "";
     // Exclude mods from actions.
     const isMod = await isUserMod(username);

@@ -18,12 +18,28 @@
   },
   "settings": {
     "subreddit": {
-      "behavior": {
+      "actionPosts": {
+        "type": "boolean",
+        "label": "Action posts",
+        "helpText": "If enabled, the app will action posts from users with a note on their account.",
+        "defaultValue": true
+      },
+      "actionComments": {
+        "type": "boolean",
+        "label": "Action comments",
+        "helpText": "If enabled, the app will action comments from users with a note on their account.",
+        "defaultValue": true
+      },
+      "spamWatchBehavior": {
         "type": "select",
-        "label": "Select behavior",
+        "label": "Behavior for users with a \"Spam Watch\" note",
         "helpText": "\"Report\" will flag content for review without removing it. \"Filter\" will remove content and send it for review. \"Remove\" will remove content without sending it for review.",
-        "defaultValue": "filter",
+        "defaultValue": "report",
         "options": [
+          {
+            "label": "No action",
+            "value": "none"
+          },
           {
             "label": "Report",
             "value": "report"
@@ -38,47 +54,97 @@
           }
         ]
       },
-      "actionPosts": {
-        "type": "boolean",
-        "label": "Action posts",
-        "helpText": "If enabled, the app will action posts from users with a note on their account.",
-        "defaultValue": true
+      "spamWarningBehavior": {
+        "type": "select",
+        "label": "Behavior for users with a \"Spam Warning\" note",
+        "defaultValue": "filter",
+        "options": [
+          {
+            "label": "No action",
+            "value": "none"
+          },
+          {
+            "label": "Report",
+            "value": "report"
+          },
+          {
+            "label": "Filter",
+            "value": "filter"
+          },
+          {
+            "label": "Remove",
+            "value": "remove"
+          }
+        ]
       },
-      "actionComments": {
-        "type": "boolean",
-        "label": "Action comments",
-        "helpText": "If enabled, the app will action comments from users with a note on their account.",
-        "defaultValue": true
+      "abuseWarningBehavior": {
+        "type": "select",
+        "label": "Behavior for users with an \"Abuse Warning\" note",
+        "defaultValue": "filter",
+        "options": [
+          {
+            "label": "No action",
+            "value": "none"
+          },
+          {
+            "label": "Report",
+            "value": "report"
+          },
+          {
+            "label": "Filter",
+            "value": "filter"
+          },
+          {
+            "label": "Remove",
+            "value": "remove"
+          }
+        ]
       },
-      "actionSpamWatch": {
-        "type": "boolean",
-        "label": "Action users with a \"Spam Watch\" note",
-        "helpText": "If enabled, the app will action content from users with a \"Spam Watch\" note on their account.",
-        "defaultValue": true
+      "banNoteBehavior": {
+        "type": "select",
+        "label": "Behavior for users with a \"Ban\" note",
+        "defaultValue": "filter",
+        "options": [
+          {
+            "label": "No action",
+            "value": "none"
+          },
+          {
+            "label": "Report",
+            "value": "report"
+          },
+          {
+            "label": "Filter",
+            "value": "filter"
+          },
+          {
+            "label": "Remove",
+            "value": "remove"
+          }
+        ]
       },
-      "actionSpamWarning": {
-        "type": "boolean",
-        "label": "Action users with a \"Spam Warning\" note",
-        "helpText": "If enabled, the app will action content from users with a a \"Spam Warning\" note on their account.",
-        "defaultValue": true
-      },
-      "actionAbuseWarning": {
-        "type": "boolean",
-        "label": "Action users with an \"Abuse Warning\" note",
-        "helpText": "If enabled, the app will action content from users with an \"Abuse Warning\" note on their account.",
-        "defaultValue": true
-      },
-      "actionBanNote": {
-        "type": "boolean",
-        "label": "Action users with a \"Ban\" note",
-        "helpText": "If enabled, the app will action content from users with a \"Ban\" note on their account (typically from a previous ban).",
-        "defaultValue": true
-      },
-      "actionNoLabel": {
-        "type": "boolean",
-        "label": "Action users with a standard note",
-        "helpText": "If enabled, the app will action content from users who have a note on their account without a specific label.",
-        "defaultValue": false
+      "noLabelBehavior": {
+        "type": "select",
+        "label": "Behavior for users with a standard note (no label)",
+        "defaultValue": "none",
+        "options": [
+          {
+            "label": "No action",
+            "value": "none"
+          },
+          {
+            "label": "Report",
+            "value": "report"
+          },
+          {
+            "label": "Filter",
+            "value": "filter"
+          },
+          {
+            "label": "Remove",
+            "value": "remove"
+          }
+        ]
       },
       "maxNoteAgeDays": {
         "type": "number",

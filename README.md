@@ -19,6 +19,14 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
+### [1.0.0] (2026-06-12)
+
+#### Features
+
+- Added granular control over which actions are taken according to specific note labels. For example, by default, the app now reports content from users with a "Spam Watch" note but filters content from users with a "Spam Warning" note. This is fully configurable in the settings.
+- Fixed an issue that could cause the app to only action according to the most recent note label, ignoring older notes.
+- Altered the report/filter message slightly for better label readability (no more all-caps).
+
 ### [0.1.6] (2026-06-11)
 
 - Added an option to ignore mod notes past a certain age (in days).
