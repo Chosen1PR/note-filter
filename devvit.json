@@ -146,6 +146,12 @@
           }
         ]
       },
+      "noLabelKeywords": {
+        "type": "paragraph",
+        "label": "Keywords for notes with no label",
+        "helpText": "Comma (,) separated list of keywords or phrases to check for in notes with no label. If left blank, every note will be considered.",
+        "defaultValue": ""
+      },
       "maxNoteAgeDays": {
         "type": "number",
         "label": "Ignore notes older than ___ days",

@@ -66,8 +66,18 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
       actionTaken = spamWatchBehavior;
     }
     else if (noLabelBehavior != 'none' && label == 'NONE') {
-      await actionContent(id, label, noLabelBehavior);
-      actionTaken = noLabelBehavior;
+      const keywordConfig = allSettings['noLabelKeywords'] as string ?? '';
+      if (keywordConfig.trim() != '') { // Keyword config is not empty. Search for keywords and action accordingly.
+        const keywordMatch = getKeywordMatchForNoLabelNotes(userNote.note ?? '', keywordConfig);
+        if (keywordMatch) {
+          await actionContent(id, label, noLabelBehavior, keywordMatch);
+          actionTaken = noLabelBehavior;
+        }
+      }
+      else { // Keyword config is empty. Ignore keywords and always action.
+        await actionContent(id, label, noLabelBehavior);
+        actionTaken = noLabelBehavior;
+      }
     }
     if (actionTaken == 'remove') break;
   }
@@ -75,9 +85,11 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
 
 // Helper function to take action on content based on mod note label and selected behavior.
 // Split up into two functions because of content type requirements for Reddit API.
-export async function actionContent(id: PostOrCommentId, label: string, behavior: string) {
-  const formattedLabel = formatLabel(label),
-  reason = `User has a mod note with label: ${formattedLabel}`;
+export async function actionContent(id: PostOrCommentId, label: string, behavior: string, keyword?: string) {
+  const formattedLabel = formatLabel(label);
+  let reason = `User has a mod note with label: ${formattedLabel}`;
+  if (keyword != undefined && keyword.trim() != '')
+    reason = `User has a mod note with keyword: ${keyword}`;
   if (behavior == 'report') {
     let postOrComment: Post | Comment | undefined;
     if (id.startsWith('t3_'))
@@ -92,6 +104,22 @@ export async function actionContent(id: PostOrCommentId, label: string, behavior
   else if (behavior == "remove") {
     await reddit.remove(id, false);
   }
+}
+
+// Helper function to determine if content should be actioned based on a note with no label.
+// To be used only when "no label" notes are okay to be actioned.
+// Returns a keyword match if found, undefined otherwise.
+function getKeywordMatchForNoLabelNotes(noteText: string, keywordConfig: string) {
+  if (keywordConfig.trim() == '') return;
+  const keywords = keywordConfig.split(',');
+  for (const keyword of keywords) {
+    const keywordLower = keyword.toLowerCase().trim(),
+    noteLower = noteText.toLowerCase().trim();
+    if (keywordLower != '' && noteLower.includes(keywordLower)) {
+      return keyword;
+    }
+  }
+  return;
 }
 
 // Helper function to determine if a user is a mod. Used for excluding mods from actions.

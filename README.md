@@ -12,12 +12,17 @@ This tool allows mods to configure automatic actions to be made on posts and com
     * Abuse Warning
     * Ban
     * No Label
+* For notes with no label, define a list of keywords or phrases to look for in the note text.
 
 *Note: Moderators' posts and comments will not be affected by this app, even if they have mod notes.*
 
 ---
 
 ## Changelog
+
+### [1.0.1] (2026-06-15)
+
+- Added the ability to action content by users with no-label notes according to the text inside of them. This is done by defining a list of keywords or phrases.
 
 ### [1.0.0] (2026-06-12)
 
