@@ -20,7 +20,7 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
-### [1.0.1] (2026-06-15)
+### [1.0.1] (2026-06-16)
 
 - Added the ability to action content by users with no-label notes according to the text inside of them. This is done by defining a list of keywords or phrases.
 
