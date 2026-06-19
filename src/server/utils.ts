@@ -99,7 +99,7 @@ export async function actionContent(id: PostOrCommentId, label: string, behavior
     if (postOrComment) await reddit.report(postOrComment, { reason: reason })
   }
   else if (behavior == "filter") {
-    await reddit.filter(id, reason, true);
+    await reddit.filter(id, reason, false);
   }
   else if (behavior == "remove") {
     await reddit.remove(id, false);
