@@ -1,6 +1,6 @@
 ## Features
 
-This tool allows mods to configure automatic actions to be made on posts and comments by users who have mod notes on their account. It's configurable by the label on the note rather than its text. For example, you can choose to only filter content by users with a "Spam Warning" or "Abuse Warning" note. The full feature list is below.
+This tool allows mods to configure automatic actions to be made on posts and comments by users who have mod notes on their account. It's configurable by the label on the note (e.g., "Spam Warning" or "Abuse Warning") or, in the case of notes with no label, its text. For example, you can choose to only filter content by users with an "Abuse Warning" note. The full feature list is below.
 
 * Automatically report, filter, or remove content from users who have mod notes on their account.
 * Action posts, comments, or both.
@@ -20,7 +20,7 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
-### [1.0.2] (2026-06-19)
+### [1.0.3] (2026-06-19)
 
 - Fixed an issue that caused filtered posts/comments to still be visible to other users while in the mod queue.
 
