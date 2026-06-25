@@ -1,6 +1,6 @@
 ## Features
 
-This tool allows mods to configure automatic actions to be made on posts and comments by users who have mod notes on their account. It's configurable by the label on the note (e.g., "Spam Warning" or "Abuse Warning") or, in the case of notes with no label, its text. For example, you can choose to only filter content by users with an "Abuse Warning" note. The full feature list is below.
+This tool allows mods to configure automatic actions to be made on posts and comments by users who have mod notes on their account. It's configurable by the label on the note (e.g., "Spam Warning" or "Abuse Warning") or, in the case of notes with no label, the text. For example, you can choose to only filter content by users with an "Abuse Warning" note. The full feature list is below.
 
 * Automatically report, filter, or remove content from users who have mod notes on their account.
 * Action posts, comments, or both.
@@ -13,12 +13,21 @@ This tool allows mods to configure automatic actions to be made on posts and com
     * Ban
     * No Label
 * For notes with no label, define a list of keywords or phrases to look for in the note text.
+* Optionally create a Spam Watch or Spam Warning note on a user automatically whenever a mod marks a post or comment as spam.
+* Optionally create a Ban note on a user automatically whenever a mod bans that user, even if the mod didn't leave a note themselves.
+* Define an ignore-list of mods for which automatic notes will *not* be created. This could be useful if your subreddit has other apps/bots that leave notes.
 
 *Note: Moderators' posts and comments will not be affected by this app, even if they have mod notes.*
 
 ---
 
 ## Changelog
+
+### [1.0.4] (2026-06-25)
+
+- Added the option to automatically create a Spam Watch or Spam Warning note whenever a mod marks a post/comment as spam.
+- Added the option to automatically create a Ban note whenever a mod bans a user.
+- Added the option to define an ignore-list of mods for which automatic notes will not be created.
 
 ### [1.0.3] (2026-06-19)
 

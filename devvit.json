@@ -163,12 +163,37 @@
         "label": "Exempt approved users",
         "helpText": "If enabled, the app will not action content from users who have been approved by mods.",
         "defaultValue": false
+      },
+      "createSpamWatchNote": {
+        "type": "boolean",
+        "label": "Create Spam Watch note on spam removals",
+        "helpText": "If enabled, a Spam Watch note will be created for the author whenever a post or comment is removed as spam.",
+        "defaultValue": false
+      },
+      "createSpamWarningNote": {
+        "type": "boolean",
+        "label": "Create Spam Warning note on spam removals",
+        "helpText": "If enabled, a Spam Warning note will be created for the author whenever a post or comment is removed as spam. If both this and the above setting are enabled, the Spam Warning note will take priority.",
+        "defaultValue": false
+      },
+      "createBanNote": {
+        "type": "boolean",
+        "label": "Create Ban note on bans",
+        "helpText": "If enabled, a Ban note will be created for a user when they are banned by a mod, even if the mod does not leave a manual ban note.",
+        "defaultValue": false
+      },
+      "modBlacklist": {
+        "type": "paragraph",
+        "label": "Ignore spam/ban actions by these mods",
+        "helpText": "Comma (,) separated list of moderator usernames (case-sensitive). Mod notes will NOT be created for spam actions and bans made by these mods, even if the above settings are enabled. This could be useful if your subreddit has other apps/bots that leave notes.",
+        "defaultValue": ""
       }
     }
   },
   "triggers": {
     "onPostCreate": "/internal/triggers/on-post-create",
-    "onCommentCreate": "/internal/triggers/on-comment-create"
+    "onCommentCreate": "/internal/triggers/on-comment-create",
+    "onModAction": "/internal/triggers/on-mod-action"
   },
   "marketingAssets": {
     "icon": "assets/nf-icon.png"

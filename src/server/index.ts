@@ -2,7 +2,8 @@ import express from "express";
 import {
   createServer,
   getServerPort,
-  settings
+  settings,
+  reddit
 } from "@devvit/web/server";
 
 import {
@@ -10,9 +11,10 @@ import {
   iterateModNotes,
   isUserMod,
   isUserApproved,
-  isThereAtLeastOneValidBehavior
+  isThereAtLeastOneValidBehavior,
+  isModIgnored
 } from "./utils.js";
-import { PostId, CommentId } from "./types";
+import { PostId, CommentId, PostOrCommentId } from "./types";
 
 const app = express();
 
@@ -75,6 +77,62 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     if (modNotes.length > 0) {
       const commentId = req.body.comment.id as string ?? "";
       await iterateModNotes(modNotes, allSettings, commentId as CommentId);
+    }
+    res.status(200).json({ status: 'ok' });
+  }
+  catch (error) {
+    console.log(error);
+  }
+});
+
+// Trigger handler for spam removal
+router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> => {
+  const modAction = req.body.action as string ?? '',
+  subredditName = req.body.subreddit.name as string ?? '',
+  userId = req.body.targetUser.id as string ?? '',
+  username = req.body.targetUser.name as string ?? '',
+  modName = req.body.moderator.name as string ?? '',
+  postId = req.body.targetPost.id as string ?? '',
+  commentId = req.body.targetComment.id as string ?? '',
+  id = commentId || postId;
+  if (userId == '' || username == '' || userId == 't2_0' || username == '[deleted]' || username == '[redacted]') return;
+  try {
+    // For "Spam Link" and "Spam Comment" actions
+    if (modAction == 'spamlink' || modAction == 'spamcomment') {
+      if (id == '') return;
+      const allSettings = await settings.getAll(),
+      createSpamWatchNote = allSettings['createSpamWatchNote'] as boolean,
+      createSpamWarningNote = allSettings['createSpamWarningNote'] as boolean,
+      modBlacklist = allSettings['modBlacklist'] as string ?? '';
+      if (isModIgnored(modName, modBlacklist)) return;
+      const type = id.startsWith('t3_') ? 'Post' : 'Comment';
+      let label = '';
+      if (createSpamWarningNote) label = 'SPAM_WARNING';
+      else if (createSpamWatchNote) label = 'SPAM_WATCH';
+      if (label == 'SPAM_WARNING' || label == 'SPAM_WATCH') {
+         await reddit.addModNote({
+          subreddit: subredditName,
+          user: username,
+          note: `${type} marked as spam by ${modName}`,
+          redditId: id as PostOrCommentId,
+          label: label
+        });
+      }
+    }
+    // For "Ban User" actions
+    else if (modAction == 'banuser') {
+      const allSettings = await settings.getAll(),
+      createBanNote = allSettings['createBanNote'] as boolean,
+      modBlacklist = allSettings['modBlacklist'] as string ?? '';
+      if (isModIgnored(modName, modBlacklist)) return;
+      if (createBanNote) {
+        await reddit.addModNote({
+          subreddit: subredditName,
+          user: username,
+          note: `Banned by ${modName}`,
+          label: 'BAN'
+        });
+      }
     }
     res.status(200).json({ status: 'ok' });
   }

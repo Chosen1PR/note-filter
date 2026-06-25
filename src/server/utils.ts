@@ -180,3 +180,13 @@ export function isThereAtLeastOneValidBehavior(allSettings: SettingsValues) {
   else if (noLabelBehavior != 'none') return true;
   else return false;
 }
+
+// Helper function to determine is a mod action by a specific mod should be ignored.
+export function isModIgnored(modUsername: string, modBlacklist: string) {
+  if (modBlacklist == '') return false;
+  const modBlacklistArray = modBlacklist.split(',');
+  for (const modName of modBlacklistArray) {
+    if (modName.trim() == modUsername) return true;
+  }
+  return false;
+}
