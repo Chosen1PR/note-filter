@@ -179,13 +179,13 @@
       "createBanNote": {
         "type": "boolean",
         "label": "Create Ban note on bans",
-        "helpText": "If enabled, a Ban note will be created for a user when they are banned by a mod, even if the mod does not leave a manual ban note.",
+        "helpText": "If enabled, a Ban note will be created for a user when they are banned by a mod, even if the mod does not leave a note themselves.",
         "defaultValue": false
       },
       "modBlacklist": {
         "type": "paragraph",
         "label": "Ignore spam/ban actions by these mods",
-        "helpText": "Comma (,) separated list of moderator usernames (case-sensitive). Mod notes will NOT be created for spam actions and bans made by these mods, even if the above settings are enabled. This could be useful if your subreddit has other apps/bots that leave notes.",
+        "helpText": "Comma (,) separated list of moderator usernames (case-sensitive). Mod notes on users will NOT be created for spam actions and bans made by these mods, even if the above settings are enabled. This could be useful if your subreddit has other apps/bots that leave notes.",
         "defaultValue": ""
       }
     }
