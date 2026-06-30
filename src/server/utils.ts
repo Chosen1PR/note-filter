@@ -193,21 +193,27 @@ export function isModIgnored(modUsername: string, modBlacklist: string) {
 
 // Helper function to determine if a specific action has already been made on a post/comment.
 function hasActionBeenTaken(behavior: string, actions: ActionsTaken) {
-  switch (behavior) {
-    case 'report': return actions.reported;
-    case 'filter': return actions.filtered;
-    case 'remove': return actions.removed;
-    default: return false;
-  }
+  if (behavior == 'report') return actions.reported;
+  else if (behavior == 'filter') return actions.filtered;
+  else if (behavior == 'remove') return actions.removed;
+  else return false;
 }
+
+// Switch-case variation of above function. For some reason, it doesn't work. Investigate later.
+//function hasActionBeenTaken(behavior: string, actions: ActionsTaken) {
+//  switch (behavior) {
+//    case 'report': return actions.reported;
+//    case 'filter': return actions.filtered;
+//    case 'remove': return actions.removed;
+//    default: return false;
+//  }
+//}
 
 // Helper function that mutates an ActionsTaken record by updating the appropriate action taken.
 function markActionTaken(behavior: string, actions: ActionsTaken) {
-  switch (behavior) {
-    case 'report': actions.reported = true;
-    case 'filter': actions.filtered = true;
-    case 'remove': actions.removed = true;
-  }
+  if (behavior == 'report') actions.reported = true;
+  else if (behavior == 'filter') actions.filtered = true;
+  else if (behavior == 'remove') actions.removed = true;
 }
 
 // Helper function to get the specific fields of a request.

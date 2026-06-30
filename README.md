@@ -23,7 +23,7 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
-### [1.0.8] (2026-06-29)
+### [1.0.9] (2026-06-29)
 
 #### Bug Fixes
 
