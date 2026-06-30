@@ -23,6 +23,13 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
+### [1.0.8] (2026-06-29)
+
+#### Bug Fixes
+
+- Fixed an issue that caused automatic note creation to stop working suddenly due to a recent change by Reddit in how "spamlink" and "spamcomment" triggers fire.
+- Fixed an issue that caused posts/comments to be reported or filtered multiple times in a row in the mod log if the user had multiple notes.
+
 ### [1.0.7] (2026-06-25)
 
 #### Features

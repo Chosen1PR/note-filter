@@ -3,7 +3,8 @@ import {
   createServer,
   getServerPort,
   settings,
-  reddit
+  reddit,
+  context
 } from "@devvit/web/server";
 
 import {
@@ -12,9 +13,10 @@ import {
   isUserMod,
   isUserApproved,
   isThereAtLeastOneValidBehavior,
-  isModIgnored
+  isModIgnored,
+  getRequestBodyValue
 } from "./utils.js";
-import { PostId, CommentId, PostOrCommentId } from "./types";
+import { PostId, CommentId, PostOrCommentId, UserId } from "./types";
 
 const app = express();
 
@@ -34,7 +36,7 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     const actionPosts = allSettings['actionPosts'] as boolean ?? false;
     if (!actionPosts) return;
     if (!isThereAtLeastOneValidBehavior(allSettings)) return;
-    const username = req.body.author.name as string ?? "";
+    const username = (req.body.author.name as string) ?? '';
     // Exclude mods from actions.
     const isMod = await isUserMod(username);
     if (isMod) return;
@@ -46,7 +48,7 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
     if (modNotes.length > 0) {
-      const postId = req.body.post.id as string ?? "";
+      const postId = (req.body.post.id as string) ?? '';
       await iterateModNotes(modNotes, allSettings, postId as PostId);
     }
     res.status(200).json({ status: 'ok' });
@@ -63,7 +65,7 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     const actionComments = allSettings['actionComments'] as boolean ?? false;
     if (!actionComments) return;
     if (!isThereAtLeastOneValidBehavior(allSettings)) return;
-    const username = req.body.author.name as string ?? "";
+    const username = (req.body.author.name as string) ?? '';
     // Exclude mods from actions.
     const isMod = await isUserMod(username);
     if (isMod) return;
@@ -75,7 +77,7 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
     if (modNotes.length > 0) {
-      const commentId = req.body.comment.id as string ?? "";
+      const commentId = (req.body.comment.id as string) ?? '';
       await iterateModNotes(modNotes, allSettings, commentId as CommentId);
     }
     res.status(200).json({ status: 'ok' });
@@ -87,15 +89,16 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
 
 // Trigger handler for spam removal
 router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> => {
-  const modAction = req.body.action as string ?? '',
-  subredditName = req.body.subreddit.name as string ?? '',
-  userId = req.body.targetUser.id as string ?? '',
-  username = req.body.targetUser.name as string ?? '',
-  modName = req.body.moderator.name as string ?? '',
-  postId = req.body.targetPost.id as string ?? '',
-  commentId = req.body.targetComment.id as string ?? '',
+  //console.log(req.body);
+  const modAction = getRequestBodyValue(req.body, ['action']) ?? '',
+  subredditName = (getRequestBodyValue(req.body, ['subreddit', 'name']) ?? context.subredditName) ?? '',
+  userId = getRequestBodyValue(req.body, ['targetUser', 'id']) ?? '',
+  modName = getRequestBodyValue(req.body, ['moderator', 'name']) ?? '',
+  postId = getRequestBodyValue(req.body, ['targetPost', 'id']) ?? '',
+  commentId = getRequestBodyValue(req.body, ['targetComment', 'id']) ?? '',
   id = commentId || postId;
-  if (userId == '' || username == '' || userId == 't2_0' || username == '[deleted]' || username == '[redacted]') return;
+  //console.log(`modAction: ${modAction}\nuserId: ${userId}\nredditId: ${id}`);
+  if (userId == '' || userId == 't2_0') return;
   try {
     // For "Spam Link" and "Spam Comment" actions
     if (modAction == 'spamlink' || modAction == 'spamcomment') {
@@ -103,35 +106,42 @@ router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> 
       const allSettings = await settings.getAll(),
       createSpamWatchNote = allSettings['createSpamWatchNote'] as boolean,
       createSpamWarningNote = allSettings['createSpamWarningNote'] as boolean,
-      modBlacklist = allSettings['modBlacklist'] as string ?? '';
+      modBlacklist = (allSettings['modBlacklist'] as string) ?? '';
       if (isModIgnored(modName, modBlacklist)) return;
       const type = id.startsWith('t3_') ? 'Post' : 'Comment';
       let label = '';
       if (createSpamWarningNote) label = 'SPAM_WARNING';
       else if (createSpamWatchNote) label = 'SPAM_WATCH';
       if (label == 'SPAM_WARNING' || label == 'SPAM_WATCH') {
-         await reddit.addModNote({
-          subreddit: subredditName,
-          user: username,
-          note: `${type} marked as spam by ${modName}`,
-          redditId: id as PostOrCommentId,
-          label: label
-        });
+        const user = await reddit.getUserById(userId as UserId);
+        if (user) {
+          await reddit.addModNote({
+            subreddit: subredditName,
+            user: user.username,
+            note: `${type} marked as spam by ${modName}`,
+            redditId: id as PostOrCommentId,
+            label: label
+          });
+        }
       }
     }
     // For "Ban User" actions
     else if (modAction == 'banuser') {
       const allSettings = await settings.getAll(),
       createBanNote = allSettings['createBanNote'] as boolean,
-      modBlacklist = allSettings['modBlacklist'] as string ?? '';
+      modBlacklist = (allSettings['modBlacklist'] as string) ?? '';
       if (isModIgnored(modName, modBlacklist)) return;
       if (createBanNote) {
-        await reddit.addModNote({
-          subreddit: subredditName,
-          user: username,
-          note: `Banned by ${modName}`,
-          label: 'BAN'
-        });
+        const user = await reddit.getUserById(userId as UserId);
+        if (user) {
+          await reddit.addModNote({
+            subreddit: subredditName,
+            user: user.username,
+            note: `Banned by ${modName}`,
+            label: 'BAN'
+          });
+        }
+        
       }
     }
     res.status(200).json({ status: 'ok' });

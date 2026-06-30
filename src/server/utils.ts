@@ -10,7 +10,8 @@ import {
 import {
   PostId,
   CommentId,
-  PostOrCommentId
+  PostOrCommentId,
+  ActionsTaken
 } from "./types";
 
 // Helper function to get all mod notes for a given user
@@ -40,46 +41,45 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
   spamWatchBehavior = allSettings['spamWatchBehavior'] as string ?? 'none',
   noLabelBehavior = allSettings['noLabelBehavior'] as string ?? 'none',
   maxNoteAgeDays = allSettings['maxNoteAgeDays'] as number ?? 0;
-  var actionTaken = '';
+  const actions: ActionsTaken = { reported: false, filtered: false, removed: false };
   for (const note of modNotes) {
     const userNote = note.userNote;
     if (!userNote) continue;
     if (maxNoteAgeDays > 0) {
-      const noteAgeDays = getAgeDays(note.createdAt);
-      if (noteAgeDays > maxNoteAgeDays) continue;
+      if (getAgeDays(note.createdAt) > maxNoteAgeDays) continue;
     }
     const label = userNote.label as string ?? 'NONE';
-    if (banNoteBehavior != 'none' && label.toString().includes("BAN")) {
+    if (banNoteBehavior != 'none' && label.toString().includes("BAN") && !hasActionBeenTaken(banNoteBehavior, actions)) {
       await actionContent(id, label, banNoteBehavior);
-      actionTaken = banNoteBehavior;
+      markActionTaken(banNoteBehavior, actions);
     }
-    else if (abuseWarningBehavior != 'none' && label == 'ABUSE_WARNING') {
+    else if (abuseWarningBehavior != 'none' && label == 'ABUSE_WARNING' && !hasActionBeenTaken(abuseWarningBehavior, actions)) {
       await actionContent(id, label, abuseWarningBehavior);
-      actionTaken = abuseWarningBehavior;
+      markActionTaken(abuseWarningBehavior, actions);
     }
-    else if (spamWarningBehavior != 'none' && label == 'SPAM_WARNING') {
+    else if (spamWarningBehavior != 'none' && label == 'SPAM_WARNING' && !hasActionBeenTaken(spamWarningBehavior, actions)) {
       await actionContent(id, label, spamWarningBehavior);
-      actionTaken = spamWarningBehavior;
+      markActionTaken(spamWarningBehavior, actions);
     }
-    else if (spamWatchBehavior != 'none' && label == 'SPAM_WATCH') {
+    else if (spamWatchBehavior != 'none' && label == 'SPAM_WATCH' && !hasActionBeenTaken(spamWatchBehavior, actions)) {
       await actionContent(id, label, spamWatchBehavior);
-      actionTaken = spamWatchBehavior;
+      markActionTaken(spamWatchBehavior, actions);
     }
-    else if (noLabelBehavior != 'none' && label == 'NONE') {
-      const keywordConfig = allSettings['noLabelKeywords'] as string ?? '';
+    else if (noLabelBehavior != 'none' && label == 'NONE' && !hasActionBeenTaken(noLabelBehavior, actions)) {
+      const keywordConfig = (allSettings['noLabelKeywords'] as string) ?? '';
       if (keywordConfig.trim() != '') { // Keyword config is not empty. Search for keywords and action accordingly.
         const keywordMatch = getKeywordMatchForNoLabelNotes(userNote.note ?? '', keywordConfig);
         if (keywordMatch) {
           await actionContent(id, label, noLabelBehavior, keywordMatch);
-          actionTaken = noLabelBehavior;
+          markActionTaken(noLabelBehavior, actions);
         }
       }
       else { // Keyword config is empty. Ignore keywords and always action.
         await actionContent(id, label, noLabelBehavior);
-        actionTaken = noLabelBehavior;
+        markActionTaken(noLabelBehavior, actions);
       }
     }
-    if (actionTaken == 'remove') break;
+    if (actions.removed) break;
   }
 }
 
@@ -189,4 +189,43 @@ export function isModIgnored(modUsername: string, modBlacklist: string) {
     if (modName.trim() == modUsername) return true;
   }
   return false;
+}
+
+// Helper function to determine if a specific action has already been made on a post/comment.
+function hasActionBeenTaken(behavior: string, actions: ActionsTaken) {
+  switch (behavior) {
+    case 'report': return actions.reported;
+    case 'filter': return actions.filtered;
+    case 'remove': return actions.removed;
+    default: return false;
+  }
+}
+
+// Helper function that mutates an ActionsTaken record by updating the appropriate action taken.
+function markActionTaken(behavior: string, actions: ActionsTaken) {
+  switch (behavior) {
+    case 'report': actions.reported = true;
+    case 'filter': actions.filtered = true;
+    case 'remove': actions.removed = true;
+  }
+}
+
+// Helper function to get the specific fields of a request.
+// Returns empty string if value is not found.
+export function getRequestBodyValue(body: any, ...paths: Array<string[]>) {
+  for (const path of paths) {
+    let current: any = body;
+    let found = true;
+    for (const key of path) {
+      if (current == null || typeof current !== 'object' || !(key in current)) {
+        found = false;
+        break;
+      }
+      current = current[key];
+    }
+    if (found && current != null && current !== '') {
+      return String(current);
+    }
+  }
+  return '';
 }
