@@ -14,7 +14,10 @@ import {
   isUserApproved,
   isThereAtLeastOneValidBehavior,
   isModIgnored,
-  getRequestBodyValue
+  getRequestBodyValue,
+  isValidUsername,
+  getPostOrComment,
+  isValidUserId
 } from "./utils.js";
 import { PostId, CommentId, PostOrCommentId, UserId } from "./types";
 
@@ -36,7 +39,12 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     const actionPosts = allSettings['actionPosts'] as boolean ?? false;
     if (!actionPosts) return;
     if (!isThereAtLeastOneValidBehavior(allSettings)) return;
-    const username = (req.body.author.name as string) ?? '';
+    let username = getRequestBodyValue(req.body, ['author', 'name']),
+    id = getRequestBodyValue(req.body, ['post', 'id']);
+    if (!isValidUsername(username)) {
+      const post = await reddit.getPostById(id as PostId);
+      if (post) username = post.authorName;
+    }
     // Exclude mods from actions.
     const isMod = await isUserMod(username);
     if (isMod) return;
@@ -47,10 +55,8 @@ router.post('/internal/triggers/on-post-create', async (req, res): Promise<void>
     }
     // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
-    if (modNotes.length > 0) {
-      const postId = (req.body.post.id as string) ?? '';
-      await iterateModNotes(modNotes, allSettings, postId as PostId);
-    }
+    if (modNotes.length > 0)
+      await iterateModNotes(modNotes, allSettings, id as PostId);
     res.status(200).json({ status: 'ok' });
   }
   catch (error) {
@@ -65,7 +71,12 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     const actionComments = allSettings['actionComments'] as boolean ?? false;
     if (!actionComments) return;
     if (!isThereAtLeastOneValidBehavior(allSettings)) return;
-    const username = (req.body.author.name as string) ?? '';
+    let username = getRequestBodyValue(req.body, ['author', 'name']),
+    id = getRequestBodyValue(req.body, ['comment', 'id']);
+    if (!isValidUsername(username)) {
+      const comment = await reddit.getCommentById(id as CommentId);
+      if (comment) username = comment.authorName;
+    }
     // Exclude mods from actions.
     const isMod = await isUserMod(username);
     if (isMod) return;
@@ -76,10 +87,8 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
     }
     // If we're here, time to get the mod notes.
     const modNotes = await getModNotes(username);
-    if (modNotes.length > 0) {
-      const commentId = (req.body.comment.id as string) ?? '';
-      await iterateModNotes(modNotes, allSettings, commentId as CommentId);
-    }
+    if (modNotes.length > 0)
+      await iterateModNotes(modNotes, allSettings, id as CommentId);
     res.status(200).json({ status: 'ok' });
   }
   catch (error) {
@@ -90,58 +99,60 @@ router.post('/internal/triggers/on-comment-create', async (req, res): Promise<vo
 // Trigger handler for spam removal
 router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> => {
   //console.log(req.body);
-  const modAction = getRequestBodyValue(req.body, ['action']) ?? '',
-  subredditName = (getRequestBodyValue(req.body, ['subreddit', 'name']) ?? context.subredditName) ?? '',
-  userId = getRequestBodyValue(req.body, ['targetUser', 'id']) ?? '',
-  modName = getRequestBodyValue(req.body, ['moderator', 'name']) ?? '',
-  postId = getRequestBodyValue(req.body, ['targetPost', 'id']) ?? '',
-  commentId = getRequestBodyValue(req.body, ['targetComment', 'id']) ?? '',
+  const modAction = getRequestBodyValue(req.body, ['action']),
+  subredditName = getRequestBodyValue(req.body, ['subreddit', 'name']) ?? context.subredditName,
+  userId = getRequestBodyValue(req.body, ['targetUser', 'id']),
+  modName = getRequestBodyValue(req.body, ['moderator', 'name']),
+  postId = getRequestBodyValue(req.body, ['targetPost', 'id']),
+  commentId = getRequestBodyValue(req.body, ['targetComment', 'id']),
   id = commentId || postId;
-  //console.log(`modAction: ${modAction}\nuserId: ${userId}\nredditId: ${id}`);
-  if (userId == '' || userId == 't2_0') return;
+  let username = getRequestBodyValue(req.body, ['targetUser', 'name']);
+  const validUsername = isValidUsername(username);
   try {
     // For "Spam Link" and "Spam Comment" actions
     if (modAction == 'spamlink' || modAction == 'spamcomment') {
-      if (id == '') return;
+      if (!validUsername && id != '') { // if username is not valid but post/comment ID is
+        const postOrComment = await getPostOrComment(id);
+        if (postOrComment) username = postOrComment.authorName;
+      }
+      if (!validUsername) return; // If even the workaround didn't work, do nothing.
       const allSettings = await settings.getAll(),
       createSpamWatchNote = allSettings['createSpamWatchNote'] as boolean,
       createSpamWarningNote = allSettings['createSpamWarningNote'] as boolean,
-      modBlacklist = (allSettings['modBlacklist'] as string) ?? '';
+      modBlacklist = (allSettings['modBlacklist'] as string);
       if (isModIgnored(modName, modBlacklist)) return;
       const type = id.startsWith('t3_') ? 'Post' : 'Comment';
       let label = '';
       if (createSpamWarningNote) label = 'SPAM_WARNING';
       else if (createSpamWatchNote) label = 'SPAM_WATCH';
       if (label == 'SPAM_WARNING' || label == 'SPAM_WATCH') {
-        const user = await reddit.getUserById(userId as UserId);
-        if (user) {
-          await reddit.addModNote({
-            subreddit: subredditName,
-            user: user.username,
-            note: `${type} marked as spam by ${modName}`,
-            redditId: id as PostOrCommentId,
-            label: label
-          });
-        }
+        await reddit.addModNote({
+          subreddit: subredditName,
+          user: username,
+          note: `${type} marked as spam by ${modName}`,
+          redditId: id as PostOrCommentId,
+          label: label
+        });
       }
     }
     // For "Ban User" actions
     else if (modAction == 'banuser') {
+      if (!validUsername && isValidUserId(userId)) { // if username is not valid but user ID is
+        const user = await reddit.getUserById(userId as UserId);
+        if (user) username = user.username;
+      }
+      if (!validUsername) return; // If even the workaround didn't work, do nothing.
       const allSettings = await settings.getAll(),
       createBanNote = allSettings['createBanNote'] as boolean,
       modBlacklist = (allSettings['modBlacklist'] as string) ?? '';
       if (isModIgnored(modName, modBlacklist)) return;
       if (createBanNote) {
-        const user = await reddit.getUserById(userId as UserId);
-        if (user) {
-          await reddit.addModNote({
-            subreddit: subredditName,
-            user: user.username,
-            note: `Banned by ${modName}`,
-            label: 'BAN'
-          });
-        }
-        
+        await reddit.addModNote({
+          subreddit: subredditName,
+          user: username,
+          note: `Banned by ${modName}`,
+          label: 'BAN'
+        });
       }
     }
     res.status(200).json({ status: 'ok' });

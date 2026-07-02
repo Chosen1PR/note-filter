@@ -91,11 +91,7 @@ export async function actionContent(id: PostOrCommentId, label: string, behavior
   if (keyword != undefined && keyword.trim() != '')
     reason = `User has a mod note with keyword: ${keyword}`;
   if (behavior == 'report') {
-    let postOrComment: Post | Comment | undefined;
-    if (id.startsWith('t3_'))
-      postOrComment = await reddit.getPostById(id as PostId);
-    else if (id.startsWith('t1_'))
-      postOrComment = await reddit.getCommentById(id as CommentId);
+    const postOrComment = await getPostOrComment(id);
     if (postOrComment) await reddit.report(postOrComment, { reason: reason })
   }
   else if (behavior == "filter") {
@@ -173,7 +169,7 @@ export function isThereAtLeastOneValidBehavior(allSettings: SettingsValues) {
   abuseWarningBehavior = allSettings['abuseWarningBehavior'] as string ?? 'none',
   banNoteBehavior = allSettings['banNoteBehavior'] as string ?? 'none',
   noLabelBehavior = allSettings['noLabelBehavior'] as string ?? 'none';
-  if (spamWatchBehavior != 'none') return true;
+  if      (spamWatchBehavior != 'none') return true;
   else if (spamWarningBehavior != 'none') return true;
   else if (abuseWarningBehavior != 'none') return true;
   else if (banNoteBehavior != 'none') return true;
@@ -193,25 +189,15 @@ export function isModIgnored(modUsername: string, modBlacklist: string) {
 
 // Helper function to determine if a specific action has already been made on a post/comment.
 function hasActionBeenTaken(behavior: string, actions: ActionsTaken) {
-  if (behavior == 'report') return actions.reported;
+  if      (behavior == 'report') return actions.reported;
   else if (behavior == 'filter') return actions.filtered;
   else if (behavior == 'remove') return actions.removed;
   else return false;
 }
 
-// Switch-case variation of above function. For some reason, it doesn't work. Investigate later.
-//function hasActionBeenTaken(behavior: string, actions: ActionsTaken) {
-//  switch (behavior) {
-//    case 'report': return actions.reported;
-//    case 'filter': return actions.filtered;
-//    case 'remove': return actions.removed;
-//    default: return false;
-//  }
-//}
-
 // Helper function that mutates an ActionsTaken record by updating the appropriate action taken.
 function markActionTaken(behavior: string, actions: ActionsTaken) {
-  if (behavior == 'report') actions.reported = true;
+  if      (behavior == 'report') actions.reported = true;
   else if (behavior == 'filter') actions.filtered = true;
   else if (behavior == 'remove') actions.removed = true;
 }
@@ -234,4 +220,28 @@ export function getRequestBodyValue(body: any, ...paths: Array<string[]>) {
     }
   }
   return '';
+}
+
+// Helper function for when Devvit is borked and shows an invalid username.
+export function isValidUsername(username: string) {
+  const name = username.toLowerCase();
+  return (
+    name != '[redacted]' &&
+    name != '[deleted]' &&
+    name != ''
+  );
+}
+
+// Helper function for when Devvit is borked and shows an invalid user ID.
+export function isValidUserId(userId: string) {
+  return (userId != 't2_0' && userId != '');
+}
+
+// Helper function to get a post or comment object based on its ID.
+export async function getPostOrComment(id: string): Promise<Post | Comment | undefined> {
+  if (id.startsWith('t3_'))
+    return await reddit.getPostById(id as PostId);
+  else if (id.startsWith('t1_'))
+    return await reddit.getCommentById(id as CommentId);
+  else return;
 }
