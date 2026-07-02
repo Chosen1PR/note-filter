@@ -107,15 +107,14 @@ router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> 
   commentId = getRequestBodyValue(req.body, ['targetComment', 'id']),
   id = commentId || postId;
   let username = getRequestBodyValue(req.body, ['targetUser', 'name']);
-  const validUsername = isValidUsername(username);
   try {
     // For "Spam Link" and "Spam Comment" actions
     if (modAction == 'spamlink' || modAction == 'spamcomment') {
-      if (!validUsername && id != '') { // if username is not valid but post/comment ID is
+      if (!isValidUsername(username) && id != '') { // if username is not valid but post/comment ID is
         const postOrComment = await getPostOrComment(id);
         if (postOrComment) username = postOrComment.authorName;
       }
-      if (!validUsername) return; // If even the workaround didn't work, do nothing.
+      if (!isValidUsername(username)) return; // If even the workaround didn't work, do nothing.
       const allSettings = await settings.getAll(),
       createSpamWatchNote = allSettings['createSpamWatchNote'] as boolean,
       createSpamWarningNote = allSettings['createSpamWarningNote'] as boolean,
@@ -137,11 +136,11 @@ router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> 
     }
     // For "Ban User" actions
     else if (modAction == 'banuser') {
-      if (!validUsername && isValidUserId(userId)) { // if username is not valid but user ID is
+      if (!isValidUsername(username) && isValidUserId(userId)) { // if username is not valid but user ID is
         const user = await reddit.getUserById(userId as UserId);
         if (user) username = user.username;
       }
-      if (!validUsername) return; // If even the workaround didn't work, do nothing.
+      if (!isValidUsername(username)) return; // If even the workaround didn't work, do nothing.
       const allSettings = await settings.getAll(),
       createBanNote = allSettings['createBanNote'] as boolean,
       modBlacklist = (allSettings['modBlacklist'] as string) ?? '';
