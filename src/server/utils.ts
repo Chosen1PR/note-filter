@@ -21,10 +21,10 @@ import {
 // "BOT_BAN" | "PERMA_BAN" | "BAN" | "ABUSE_WARNING" | "SPAM_WARNING" | "SPAM_WATCH" | "SOLID_CONTRIBUTOR" | "HELPFUL_USER"
 export async function getModNotes(username: string) {
   try {
+    const shadowbanned = !(await reddit.getUserByUsername(username));
+    if (shadowbanned) return [];
     const modNotes = await reddit.getModNotes( { user: username, subreddit: context.subredditName } ).all();
-    if (modNotes) {
-      return modNotes;
-    }
+    if (modNotes) return modNotes;
     else return [];
   }
   catch (error) {
@@ -49,7 +49,7 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
       if (getAgeDays(note.createdAt) > maxNoteAgeDays) continue;
     }
     const label = userNote.label as string ?? 'NONE';
-    if (banNoteBehavior != 'none' && label.toString().includes("BAN") && !hasActionBeenTaken(banNoteBehavior, actions)) {
+    if (banNoteBehavior != 'none' && label.toString().endsWith("BAN") && !hasActionBeenTaken(banNoteBehavior, actions)) {
       await actionContent(id, label, banNoteBehavior);
       markActionTaken(banNoteBehavior, actions);
     }
@@ -95,7 +95,7 @@ export async function actionContent(id: PostOrCommentId, label: string, behavior
     if (postOrComment) await reddit.report(postOrComment, { reason: reason })
   }
   else if (behavior == "filter") {
-    await reddit.filter(id, reason, false);
+    await reddit.filter(id, { reason: reason, keep: false });
   }
   else if (behavior == "remove") {
     await reddit.remove(id, false);

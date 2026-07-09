@@ -23,6 +23,10 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
+### [1.0.12] (2026-07-09)
+
+- Fixed an issue that could cause posts/comments from shadowbanned users to be filtered to the mod queue. As Reddit already removes these, there is no need to filter them.
+
 ### [1.0.11] (2026-07-01)
 
 - Better workaround for the previous bug fix with fewer API calls.
