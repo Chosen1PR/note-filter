@@ -40,7 +40,8 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
   spamWarningBehavior = allSettings['spamWarningBehavior'] as string ?? 'none',
   spamWatchBehavior = allSettings['spamWatchBehavior'] as string ?? 'none',
   noLabelBehavior = allSettings['noLabelBehavior'] as string ?? 'none',
-  maxNoteAgeDays = allSettings['maxNoteAgeDays'] as number ?? 0;
+  maxNoteAgeDays = allSettings['maxNoteAgeDays'] as number ?? 0,
+  modBlacklist = getModBlacklist(allSettings);
   const actions: ActionsTaken = { reported: false, filtered: false, removed: false };
   for (const note of modNotes) {
     const userNote = note.userNote;
@@ -48,6 +49,8 @@ export async function iterateModNotes(modNotes: ModNote[], allSettings: Settings
     if (maxNoteAgeDays > 0) {
       if (getAgeDays(note.createdAt) > maxNoteAgeDays) continue;
     }
+    const modName = note.operator.name ?? '';
+    if (isModIgnored(modName, modBlacklist)) continue;
     const label = userNote.label as string ?? 'NONE';
     if (banNoteBehavior != 'none' && label.toString().endsWith("BAN") && !hasActionBeenTaken(banNoteBehavior, actions)) {
       await actionContent(id, label, banNoteBehavior);
@@ -177,11 +180,15 @@ export function isThereAtLeastOneValidBehavior(allSettings: SettingsValues) {
   else return false;
 }
 
+export function getModBlacklist(allSettings: SettingsValues): string[] {
+  const modBlacklistString = (allSettings['modBlacklist'] as string) ?? '';
+  if (modBlacklistString.trim() == '') return [];
+  else return modBlacklistString.split(',');
+}
+
 // Helper function to determine is a mod action by a specific mod should be ignored.
-export function isModIgnored(modUsername: string, modBlacklist: string) {
-  if (modBlacklist == '') return false;
-  const modBlacklistArray = modBlacklist.split(',');
-  for (const modName of modBlacklistArray) {
+export function isModIgnored(modUsername: string, modBlacklist: string[]) {
+  for (const modName of modBlacklist) {
     if (modName.trim() == modUsername) return true;
   }
   return false;

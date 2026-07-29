@@ -13,6 +13,7 @@ import {
   isUserMod,
   isUserApproved,
   isThereAtLeastOneValidBehavior,
+  getModBlacklist,
   isModIgnored,
   getRequestBodyValue,
   isValidUsername,
@@ -118,7 +119,7 @@ router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> 
       const allSettings = await settings.getAll(),
       createSpamWatchNote = allSettings['createSpamWatchNote'] as boolean,
       createSpamWarningNote = allSettings['createSpamWarningNote'] as boolean,
-      modBlacklist = (allSettings['modBlacklist'] as string);
+      modBlacklist = getModBlacklist(allSettings);
       if (isModIgnored(modName, modBlacklist)) return;
       const type = id.startsWith('t3_') ? 'Post' : 'Comment';
       let label = '';
@@ -143,7 +144,7 @@ router.post('/internal/triggers/on-mod-action', async (req, res): Promise<void> 
       if (!isValidUsername(username)) return; // If even the workaround didn't work, do nothing.
       const allSettings = await settings.getAll(),
       createBanNote = allSettings['createBanNote'] as boolean,
-      modBlacklist = (allSettings['modBlacklist'] as string) ?? '';
+      modBlacklist = getModBlacklist(allSettings);
       if (isModIgnored(modName, modBlacklist)) return;
       if (createBanNote) {
         await reddit.addModNote({

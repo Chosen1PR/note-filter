@@ -15,13 +15,20 @@ This tool allows mods to configure automatic actions to be made on posts and com
 * For notes with no label, define a list of keywords or phrases to look for in the note text.
 * Optionally create a Spam Watch or Spam Warning note on a user automatically whenever a mod marks a post or comment as spam.
 * Optionally create a Ban note on a user automatically whenever a mod bans them, even if the mod didn't leave a note themselves.
-* Define an ignore-list of mods whose spam and ban actions will *not* create automatic notes. This could be useful if your subreddit has other apps/bots that leave notes.
+* Define an ignore-list of mods whose notes will *not* be read by the app and whose spam and ban actions will *not* create automatic notes. This could be useful if your subreddit has other apps/bots that write notes and action content accordingly.
 
 *Note: Moderators' posts and comments will not be affected by this app, even if they have mod notes.*
 
 ---
 
 ## Changelog
+
+### [1.0.13] (2026-07-28)
+
+#### Features
+
+- Mod ignore-list now also ignores notes written by those mods when actioning content (in addition to ignoring the mods when creating automatic notes).
+- Related app settings are now grouped together for better readability.
 
 ### [1.0.12] (2026-07-09)
 
