@@ -23,6 +23,10 @@ This tool allows mods to configure automatic actions to be made on posts and com
 
 ## Changelog
 
+### [1.0.14] (2026-07-30)
+
+- Minor change to grouped settings for even better readability, specifically for behavior settings (report, filter, remove).
+
 ### [1.0.13] (2026-07-28)
 
 #### Features

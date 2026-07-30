@@ -7,7 +7,7 @@
     },
     "media": false,
     "realtime": false,
-    "redis": true,
+    "redis": false,
     "reddit": {
       "enable": true
     }
@@ -18,9 +18,9 @@
   },
   "settings": {
     "subreddit": {
-      "behaviorSettings": {
+      "actionSettings": {
         "type": "group",
-        "label": "Behavior Settings",
+        "label": "Action Settings",
         "fields": {
           "actionPosts": {
             "type": "boolean",
@@ -34,121 +34,127 @@
             "helpText": "If enabled, the app will action comments from users with a note on their account.",
             "defaultValue": true
           },
-          "spamWatchBehavior": {
-            "type": "select",
-            "label": "Behavior for users with a \"Spam Watch\" note",
+          "behaviorSettings": {
+            "type": "group",
+            "label": "Behavior Settings",
             "helpText": "\"Report\" will flag content for review without removing it. \"Filter\" will remove content and send it for review. \"Remove\" will remove content without sending it for review.",
-            "defaultValue": "report",
-            "options": [
-              {
-                "label": "No action",
-                "value": "none"
+            "fields": {
+              "spamWatchBehavior": {
+                "type": "select",
+                "label": "Behavior for users with a \"Spam Watch\" note",
+                "defaultValue": "report",
+                "options": [
+                  {
+                    "label": "No action",
+                    "value": "none"
+                  },
+                  {
+                    "label": "Report",
+                    "value": "report"
+                  },
+                  {
+                    "label": "Filter",
+                    "value": "filter"
+                  },
+                  {
+                    "label": "Remove",
+                    "value": "remove"
+                  }
+                ]
               },
-              {
-                "label": "Report",
-                "value": "report"
+              "spamWarningBehavior": {
+                "type": "select",
+                "label": "Behavior for users with a \"Spam Warning\" note",
+                "defaultValue": "filter",
+                "options": [
+                  {
+                    "label": "No action",
+                    "value": "none"
+                  },
+                  {
+                    "label": "Report",
+                    "value": "report"
+                  },
+                  {
+                    "label": "Filter",
+                    "value": "filter"
+                  },
+                  {
+                    "label": "Remove",
+                    "value": "remove"
+                  }
+                ]
               },
-              {
-                "label": "Filter",
-                "value": "filter"
+              "abuseWarningBehavior": {
+                "type": "select",
+                "label": "Behavior for users with an \"Abuse Warning\" note",
+                "defaultValue": "filter",
+                "options": [
+                  {
+                    "label": "No action",
+                    "value": "none"
+                  },
+                  {
+                    "label": "Report",
+                    "value": "report"
+                  },
+                  {
+                    "label": "Filter",
+                    "value": "filter"
+                  },
+                  {
+                    "label": "Remove",
+                    "value": "remove"
+                  }
+                ]
               },
-              {
-                "label": "Remove",
-                "value": "remove"
+              "banNoteBehavior": {
+                "type": "select",
+                "label": "Behavior for users with a \"Ban\" note",
+                "defaultValue": "filter",
+                "options": [
+                  {
+                    "label": "No action",
+                    "value": "none"
+                  },
+                  {
+                    "label": "Report",
+                    "value": "report"
+                  },
+                  {
+                    "label": "Filter",
+                    "value": "filter"
+                  },
+                  {
+                    "label": "Remove",
+                    "value": "remove"
+                  }
+                ]
+              },
+              "noLabelBehavior": {
+                "type": "select",
+                "label": "Behavior for users with a standard note (no label)",
+                "defaultValue": "none",
+                "options": [
+                  {
+                    "label": "No action",
+                    "value": "none"
+                  },
+                  {
+                    "label": "Report",
+                    "value": "report"
+                  },
+                  {
+                    "label": "Filter",
+                    "value": "filter"
+                  },
+                  {
+                    "label": "Remove",
+                    "value": "remove"
+                  }
+                ]
               }
-            ]
-          },
-          "spamWarningBehavior": {
-            "type": "select",
-            "label": "Behavior for users with a \"Spam Warning\" note",
-            "defaultValue": "filter",
-            "options": [
-              {
-                "label": "No action",
-                "value": "none"
-              },
-              {
-                "label": "Report",
-                "value": "report"
-              },
-              {
-                "label": "Filter",
-                "value": "filter"
-              },
-              {
-                "label": "Remove",
-                "value": "remove"
-              }
-            ]
-          },
-          "abuseWarningBehavior": {
-            "type": "select",
-            "label": "Behavior for users with an \"Abuse Warning\" note",
-            "defaultValue": "filter",
-            "options": [
-              {
-                "label": "No action",
-                "value": "none"
-              },
-              {
-                "label": "Report",
-                "value": "report"
-              },
-              {
-                "label": "Filter",
-                "value": "filter"
-              },
-              {
-                "label": "Remove",
-                "value": "remove"
-              }
-            ]
-          },
-          "banNoteBehavior": {
-            "type": "select",
-            "label": "Behavior for users with a \"Ban\" note",
-            "defaultValue": "filter",
-            "options": [
-              {
-                "label": "No action",
-                "value": "none"
-              },
-              {
-                "label": "Report",
-                "value": "report"
-              },
-              {
-                "label": "Filter",
-                "value": "filter"
-              },
-              {
-                "label": "Remove",
-                "value": "remove"
-              }
-            ]
-          },
-          "noLabelBehavior": {
-            "type": "select",
-            "label": "Behavior for users with a standard note (no label)",
-            "defaultValue": "none",
-            "options": [
-              {
-                "label": "No action",
-                "value": "none"
-              },
-              {
-                "label": "Report",
-                "value": "report"
-              },
-              {
-                "label": "Filter",
-                "value": "filter"
-              },
-              {
-                "label": "Remove",
-                "value": "remove"
-              }
-            ]
+            }
           },
           "noLabelKeywords": {
             "type": "paragraph",
